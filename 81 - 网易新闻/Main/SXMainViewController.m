@@ -8,7 +8,9 @@
 
 #import "SXMainViewController.h"
 #import "SXTableViewController.h"
+#import "SXWeatherView.h"
 #import "SXTitleLable.h"
+#import "UIView+Frame.h"
 
 @interface SXMainViewController ()<UIScrollViewDelegate>
 
@@ -22,6 +24,8 @@
 
 /** 新闻接口的数组 */
 @property(nonatomic,strong) NSArray *arrayLists;
+@property(nonatomic,assign,getter=isWeatherShow)BOOL weatherShow;
+@property(nonatomic,strong)SXWeatherView *weatherView;
 
 @end
 
@@ -47,8 +51,9 @@
     
     [self addController];
     [self addLable];
+    [self addWeather];
     
-    CGFloat contentX = (self.childViewControllers.count - 1) * [UIScreen mainScreen].bounds.size.width;
+    CGFloat contentX = self.childViewControllers.count * [UIScreen mainScreen].bounds.size.width;
     self.bigScrollView.contentSize = CGSizeMake(contentX, 0);
     self.bigScrollView.pagingEnabled = YES;
     
@@ -58,6 +63,7 @@
     [self.bigScrollView addSubview:vc.view];
     SXTitleLable *lable = [self.smallScrollView.subviews firstObject];
     lable.scale = 1.0;
+    self.bigScrollView.showsHorizontalScrollIndicator = NO;
 }
 
 
@@ -108,22 +114,23 @@
 /** 添加标题栏 */
 - (void)addLable
 {
-    for (int i = 0; i < 7; i++) {
+    for (int i = 0; i < 8; i++) {
         CGFloat lblW = 70;
-        CGFloat lblH = 30;
+        CGFloat lblH = 40;
         CGFloat lblY = 0;
         CGFloat lblX = i * lblW;
         SXTitleLable *lbl1 = [[SXTitleLable alloc]init];
         UIViewController *vc = self.childViewControllers[i];
         lbl1.text =vc.title;
         lbl1.frame = CGRectMake(lblX, lblY, lblW, lblH);
+        lbl1.font = [UIFont fontWithName:@"HYQiHei" size:19];
         [self.smallScrollView addSubview:lbl1];
         lbl1.tag = i;
         lbl1.userInteractionEnabled = YES;
         
         [lbl1 addGestureRecognizer:[[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(lblClick:)]];
     }
-    self.smallScrollView.contentSize = CGSizeMake(70 * 7, 0);
+    self.smallScrollView.contentSize = CGSizeMake(70 * 8, 0);
     
 }
 
@@ -131,16 +138,6 @@
 - (void)lblClick:(UITapGestureRecognizer *)recognizer
 {
     SXTitleLable *titlelable = (SXTitleLable *)recognizer.view;
-    
-//    NSUInteger index = self.bigScrollView.contentOffset.x / self.bigScrollView.frame.size.width;
-    
-//    self.oldTitleLable = self.smallScrollView.subviews[index];
-//    self.beginOffsetX = self.bigScrollView.frame.size.width * index;
-//    NSLog(@"%f %ld",self.beginOffsetX,index);
-    
-    
-//    titlelable.textColor = [UIColor redColor];
-//    titlelable.font = [UIFont systemFontOfSize:15];
     
     CGFloat offsetX = titlelable.tag * self.bigScrollView.frame.size.width;
    
@@ -216,5 +213,27 @@
     
 }
 
+- (void)addWeather{
+    SXWeatherView *weatherView = [SXWeatherView view];
+    self.weatherView = weatherView;
+    weatherView.alpha = 0.9;
+    UIWindow *win = [UIApplication sharedApplication].windows.firstObject;
+    [win addSubview:weatherView];
+    weatherView.frame = [UIScreen mainScreen].bounds;
+    weatherView.y = 64;
+    weatherView.height -= 64;
+    self.weatherView.hidden = YES;
+}
+
+- (IBAction)rightItemClick:(UIBarButtonItem *)sender {
+    if (self.isWeatherShow) {
+        self.weatherView.hidden = YES;
+    }else{
+        self.weatherView.hidden = NO;
+        [self.weatherView addAnimate];
+    }
+    self.weatherShow = !self.isWeatherShow;
+    
+}
 
 @end

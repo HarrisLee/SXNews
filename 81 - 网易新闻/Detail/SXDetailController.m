@@ -72,19 +72,26 @@
     NSString *replyURL = self.news[self.index][@"replyUrl"];
     NSString *docID = self.newsModel.docid;
     
-    CGFloat count =  [self.newsModel.replyCount intValue]/1000.0;
-    NSString *displayCount = [NSString stringWithFormat:@"%.1f万跟帖",count];
+    
+    CGFloat count =  [self.newsModel.replyCount intValue];
+    NSString *displayCount;
+    if (count > 10000) {
+        displayCount = [NSString stringWithFormat:@"%.1f万跟帖",count/10000];
+    }else{
+        displayCount = [NSString stringWithFormat:@"%.0f跟帖",count];
+    }
+    
     
     [self.replyCountBtn setTitle:displayCount forState:UIControlStateNormal];
     
     NSLog(@"%@",self.news[1]);
-    NSLog(@"%@----%@",replyURL,docID);
+    NSLog(@"%@----%@",self.newsModel.boardid,docID);
     
     // 假数据
 //    NSString *url2 = @"http://comment.api.163.com/api/json/post/list/new/hot/photoview_bbs/PHOT1ODB009654GK/0/10/10/2/2";
     
     // 真数据
-    NSString *url2 = [NSString stringWithFormat:@"http://comment.api.163.com/api/json/post/list/new/hot/%@/%@/0/10/10/2/2",replyURL,docID];
+    NSString *url2 = [NSString stringWithFormat:@"http://comment.api.163.com/api/json/post/list/new/hot/%@/%@/0/10/10/2/2",self.newsModel.boardid,docID];
     [self sendRequestWithUrl2:url2];
     
     self.automaticallyAdjustsScrollViewInsets = NO;
@@ -92,6 +99,7 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     [self.navigationController setNavigationBarHidden:YES animated:YES];
+    self.tabBarController.tabBar.hidden = YES;
 }
 
 /** 提前把评论的请求也发出去 得到评论的信息 */
@@ -218,6 +226,10 @@
 {
     SXReplyViewController *replyvc = segue.destinationViewController;
     replyvc.replys = self.replyModels;
+    
+    if ([self.navigationController respondsToSelector:@selector(interactivePopGestureRecognizer)]) {
+        self.navigationController.interactivePopGestureRecognizer.delegate = nil;
+    }
     
     [[NSNotificationCenter defaultCenter]postNotification:[NSNotification notificationWithName:@"contentStart" object:nil]];
 }
